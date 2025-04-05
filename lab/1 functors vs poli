@@ -1,0 +1,182 @@
+#include <iostream>
+#include <chrono>
+
+#include <algorithm> // std::copy, std::shuffle
+#include <random>
+
+void rellenar(int* ar, int n) {
+    for (int i = 0; i < n; i++) {
+        ar[i] = i;
+    }
+    std::shuffle(ar, ar + n, std::mt19937{ std::random_device{}() });
+}
+
+class asc {
+public:
+    inline bool operator()(int a, int b) {
+        return a < b;
+    }
+};
+
+
+class poli_padre {
+public:
+    virtual bool op( int a , int b) = 0;
+};
+class poli_asc : public poli_padre {
+public:
+    bool op(int a, int b) {
+        return a < b;
+    }
+};
+
+void bubble_poli(int* a, int t, poli_padre* obj) {
+    
+    for (int* p = a; p < a + t; p++) {
+        for (int* q = p;q < a + t;q++) {
+            if (obj->op(*p,*q)) {
+                int tmp = *p;
+                *p = *q;
+                *q = tmp;
+            }
+        }
+    }
+}
+template<class T>
+void bubble_functor(int* a, int t,T& op) {
+    
+    for (int* p = a; p < a + t; p++) {
+        for (int* q = p;q < a + t;q++) {
+            if (op(*p, *q)) {
+                int tmp = *p;
+                *p = *q;
+                *q = tmp;
+            }
+        }
+    }
+}
+
+void bubble_normal(int* a, int t) {
+
+    for (int* p = a; p < a + t; p++) {
+        for (int* q = p;q < a + t;q++) {
+            if (*p < *q) {
+                int tmp = *p;
+                *p = *q;
+                *q = tmp;
+            }
+        }
+    }
+}
+
+void print(int* a, int t) {
+    for (int* p = a;p < a + t;p++) {
+        std::cout << *p << " ";
+    }
+}
+int main()
+{
+    int ar[50000];
+    rellenar(ar, 50000);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    bubble_normal(ar, 10000);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_normal(ar, 20000);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_normal(ar, 30000);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_normal(ar, 40000);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_normal(ar, 50000);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    std::cout << "Tiempo de ejecucion con functors en milisegundos" << std::endl;
+    rellenar(ar, 50000);
+
+    asc a;
+    start = std::chrono::high_resolution_clock::now();
+    bubble_functor<asc>(ar, 10000,a);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_functor<asc>(ar, 20000, a);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_functor<asc>(ar, 30000, a);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_functor<asc>(ar, 40000, a);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_functor<asc>(ar, 50000, a);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+
+    std::cout << "Tiempo de ejecucion con polimorfismo en milisegundos" << std::endl;
+    rellenar(ar, 50000);
+
+    poli_padre* p;
+    poli_asc h;
+    p = &h;
+    start = std::chrono::high_resolution_clock::now();
+    bubble_poli(ar, 10000,p);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_poli(ar, 20000,p);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_poli(ar, 30000,p);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_poli(ar, 40000,p);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    bubble_poli(ar, 50000,p);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tiempo de ejecucion: " << duration.count() << " milisegundos" << std::endl;
+}
