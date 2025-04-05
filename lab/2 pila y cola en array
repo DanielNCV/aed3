@@ -1,0 +1,138 @@
+#include <iostream>
+
+struct pila {
+    int* head = new int[10];
+    int size=0;
+    bool ll= 0;
+    bool v = 1;
+    void push(int a) {
+        if (ll == 1) {
+            std::cout << "pila llena" << std::endl;
+            return;
+        }
+        else {
+            *(head + size) = a;
+            v = 0;
+            size++;
+            if (size == 10)
+                ll = 1;
+        }
+        
+
+    }
+    void pop() {
+        if (v == 1) 
+            std::cout<<"pila vacia" << std::endl;
+        else {
+            if (size == 1) {
+                v = 1;
+                std::cout << *head << std::endl;
+                size--;
+                return;
+            }
+            else {
+                std::cout << *(head+size-1) << std::endl;
+                size--;
+            }
+            ll = 0;
+        }
+    }
+    void print() {
+        if (v == 1) {
+            std::cout << "pila vacia" << std::endl;
+            return;
+        }           
+        for(int*p=head;p<head+size;p++)
+            std::cout << *p << " ";
+        std::cout <<std::endl;
+
+    }
+};
+
+struct cola {
+    int* head = new int[10];
+    int size = 0;
+    bool ll = 0;
+    bool v = 1;
+
+    void push(int a) {
+        if (ll == 1) {
+            std::cout << "cola llena" << std::endl;
+            return;
+        }
+        else {
+            *(head + size) = a;
+            v = 0;
+            size++;
+            if (size == 10)
+                ll = 1;
+        }
+    }
+    void pop() {
+        if (v == 1)
+            std::cout << "cola vacia" << std::endl;
+        else {
+            if (size == 1) {
+                v = 1;
+                std::cout << *head << std::endl;
+                size--;
+                return;
+            }
+            else {
+                std::cout << *head << std::endl;
+                for (int* p = head + 1;p < head + size;p++) 
+                    *(p - 1) = *p;               
+                size--;
+            }
+            ll = 0;
+        }
+    }
+    void print() {
+        if (v == 1) {
+            std::cout << "cola vacia" << std::endl;
+            return;
+        }
+        for (int* p = head;p < head + size;p++)
+            std::cout << *p << " ";
+        std::cout << std::endl;
+
+    }
+};
+int main()
+{
+    /*
+    pila pilita;
+    for (int i = 1;i <= 5;i++) {
+        pilita.push(i);
+    }
+    pilita.print();
+    for (int i = 6;i <= 10;i++) {
+        pilita.push(i);
+    }
+    pilita.print();
+    for (int i = 0;i < 5;i++) {
+        pilita.push(i);
+    }
+    pilita.print();
+    for (int i = 0;i < 5;i++) {
+        pilita.pop();
+
+    }
+    for (int i = 0;i < 5;i++) {
+        pilita.pop();
+    }
+    pilita.print();
+    */
+    
+    cola co;
+    for (int i = 1;i <= 10;i++) {
+        co.push(i);
+    }
+    co.print();
+    
+    for (int i = 0;i < 5;i++) {
+        co.pop();
+    }
+    co.print();
+    std::cout << "Hello World!\n";
+}
