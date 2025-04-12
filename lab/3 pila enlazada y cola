@@ -1,0 +1,52 @@
+#include <iostream>
+struct nodo {
+	int A[5];
+	int* top=A;
+	nodo* next=NULL;
+};
+struct LinkedPile {
+
+	nodo* h=0;
+	void push(int v) {
+		if (!h) {
+			h = new nodo;
+			*(h->top) = v;
+			h->top++;
+		}
+		else {
+			if (h->top < ((h->A) + 5)) {
+				*(h->top) = v;
+				h->top++;
+			}
+			else {
+				nodo* tmp = new nodo;
+				*(tmp->top) = v;
+				tmp->next = h;
+				h = tmp;
+				h->top++;
+			}
+		}
+		
+	}
+};
+void printpila(nodo*a) {
+	
+	for (nodo* p = a;p;p = p->next) {
+		for (int* q = p->top-1;q >= p->A;q--)
+			std::cout << *q<< " ";
+	}
+}
+int main()
+{
+	LinkedPile pp;
+	pp.push(1);
+	pp.push(2);
+	pp.push(3);
+
+	pp.push(3);
+	pp.push(3);
+	pp.push(3);
+
+
+	printpila(pp.h);
+}
