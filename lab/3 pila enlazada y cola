@@ -8,6 +8,7 @@ struct nodoCola {
 	int A[5];
 	int* tail = A;
 	nodoCola* next = NULL;
+        nodoCola* prev = 0;
 
 };
 struct LinkedPile {
@@ -55,10 +56,22 @@ struct LinkedCola {
 				*(tmp->tail) = v;
 				tmp->tail++;
 				t->next = tmp;
+                                nodoCola* tmp1=t;
 				t = t->next;
+                                t->prev=tmp1;
 			}
 		}
 	}
+        void pop(){
+         if(!h){
+           return;
+	 }
+         else{
+           if(t->tail==t->A){
+             std::cout<<*(t->tail -1)<<" ";
+	   }
+	 }
+        }
 };
 void printpila(nodo*a) {
 	
