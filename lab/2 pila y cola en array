@@ -2,8 +2,8 @@
 
 struct pila {
     int* head = new int[10];
-    int size=0;
-    bool ll= 0;
+    int* top=0;
+    bool ll = 0;
     bool v = 1;
     void push(int a) {
         if (ll == 1) {
@@ -11,28 +11,37 @@ struct pila {
             return;
         }
         else {
-            *(head + size) = a;
-            v = 0;
-            size++;
-            if (size == 10)
+            if (!top) {
+                top = head;
+                *top = a;
+                top++;
+                v = 0;
+            }
+            else {
+                *top = a;
+                top++;
+            }
+            if (top == head+10)
                 ll = 1;
         }
-        
+
 
     }
-    void pop() {
-        if (v == 1) 
-            std::cout<<"pila vacia" << std::endl;
+    void pop(int&a) {
+        if (v == 1)
+            std::cout << "pila vacia" << std::endl;
         else {
-            if (size == 1) {
+            if (top-head == 1) {
                 v = 1;
                 std::cout << *head << std::endl;
-                size--;
+                a = *head;
+                top--;
                 return;
             }
             else {
-                std::cout << *(head+size-1) << std::endl;
-                size--;
+                std::cout << *(top - 1) << std::endl;
+                a = *(top - 1);
+                top--;
             }
             ll = 0;
         }
@@ -41,17 +50,18 @@ struct pila {
         if (v == 1) {
             std::cout << "pila vacia" << std::endl;
             return;
-        }           
-        for(int*p=head;p<head+size;p++)
+        }
+        for (int* p = head; p < top; p++)
             std::cout << *p << " ";
-        std::cout <<std::endl;
+        std::cout << std::endl;
 
     }
 };
 
 struct cola {
     int* head = new int[10];
-    int size = 0;
+    int* top = 0;
+    int* tail=0;
     bool ll = 0;
     bool v = 1;
 
@@ -61,28 +71,39 @@ struct cola {
             return;
         }
         else {
-            *(head + size) = a;
-            v = 0;
-            size++;
-            if (size == 10)
-                ll = 1;
+            if (!top) {
+                top = head;
+                tail = top;
+                *tail = a;
+                tail++;
+            }
+            else {
+                *tail = a;
+                v = 0;
+                tail++;
+                if (tail == &head[10])
+                    ll = 1;
+            }
+            
         }
     }
-    void pop() {
+    void pop(int&a) {
         if (v == 1)
             std::cout << "cola vacia" << std::endl;
         else {
-            if (size == 1) {
+            if (tail-head == 1) {
                 v = 1;
+                a = *head;
                 std::cout << *head << std::endl;
-                size--;
+                tail--;
                 return;
             }
             else {
                 std::cout << *head << std::endl;
-                for (int* p = head + 1;p < head + size;p++) 
-                    *(p - 1) = *p;               
-                size--;
+                a = *head;
+                for (int* p = head + 1; p < tail; p++)
+                    *(p - 1) = *p;
+                tail--;
             }
             ll = 0;
         }
@@ -92,7 +113,7 @@ struct cola {
             std::cout << "cola vacia" << std::endl;
             return;
         }
-        for (int* p = head;p < head + size;p++)
+        for (int* p = head; p < tail; p++)
             std::cout << *p << " ";
         std::cout << std::endl;
 
@@ -100,39 +121,33 @@ struct cola {
 };
 int main()
 {
-    /*
+    
     pila pilita;
-    for (int i = 1;i <= 5;i++) {
+    for (int i = 1;i <= 10;i++) {
         pilita.push(i);
     }
     pilita.print();
-    for (int i = 6;i <= 10;i++) {
-        pilita.push(i);
-    }
-    pilita.print();
-    for (int i = 0;i < 5;i++) {
-        pilita.push(i);
-    }
-    pilita.print();
-    for (int i = 0;i < 5;i++) {
-        pilita.pop();
+    pilita.push(1);
+
+
+    int a;
+    for (int i = 0;i < 10;i++) {
+        pilita.pop(a);
 
     }
-    for (int i = 0;i < 5;i++) {
-        pilita.pop();
-    }
     pilita.print();
-    */
     
+
     cola co;
-    for (int i = 1;i <= 10;i++) {
+    for (int i = 1; i <= 10; i++) {
         co.push(i);
     }
     co.print();
-    
-    for (int i = 0;i < 5;i++) {
-        co.pop();
+    co.push(1);
+
+    int b;
+    for (int i = 0; i < 10; i++) {
+        co.pop(b);
     }
     co.print();
-    std::cout << "Hello World!\n";
 }
