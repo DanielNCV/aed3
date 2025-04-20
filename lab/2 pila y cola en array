@@ -1,153 +1,142 @@
 #include <iostream>
 
-struct pila {
-    int* head = new int[10];
-    int* top=0;
-    bool ll = 0;
-    bool v = 1;
-    void push(int a) {
-        if (ll == 1) {
-            std::cout << "pila llena" << std::endl;
-            return;
+class cola {
+public:
+    int* a;
+    int* head;
+    int* tail;
+    const int n=4;
+    cola() {
+        head = 0;
+        tail = 0;
+        a = new int[n];
+    }
+    void push(int v) {
+
+        if (head==0) {
+            head = a;
+            *head = v;
+            tail = head;
         }
         else {
-            if (!top) {
-                top = head;
-                *top = a;
-                top++;
-                v = 0;
+            if (head <= tail) {
+                if (tail < a + n - 1) {
+                    tail++;
+                    *tail = v;
+                }
+                else {
+                    if (head != a) {
+                        tail = a;
+                        *tail = v;
+                    }
+                }
             }
             else {
-                *top = a;
-                top++;
-            }
-            if (top == head+10)
-                ll = 1;
-        }
-
-
-    }
-    void pop(int&a) {
-        if (v == 1)
-            std::cout << "pila vacia" << std::endl;
-        else {
-            if (top-head == 1) {
-                v = 1;
-                std::cout << *head << std::endl;
-                a = *head;
-                top--;
-                return;
-            }
-            else {
-                std::cout << *(top - 1) << std::endl;
-                a = *(top - 1);
-                top--;
-            }
-            ll = 0;
-        }
-    }
-    void print() {
-        if (v == 1) {
-            std::cout << "pila vacia" << std::endl;
-            return;
-        }
-        for (int* p = head; p < top; p++)
-            std::cout << *p << " ";
-        std::cout << std::endl;
-
-    }
-};
-
-struct cola {
-    int* head = new int[10];
-    int* top = 0;
-    int* tail=0;
-    bool ll = 0;
-    bool v = 1;
-
-    void push(int a) {
-        if (ll == 1) {
-            std::cout << "cola llena" << std::endl;
-            return;
-        }
-        else {
-            if (!top) {
-                top = head;
-                tail = top;
-                *tail = a;
-                tail++;
-            }
-            else {
-                *tail = a;
-                v = 0;
-                tail++;
-                if (tail == &head[10])
-                    ll = 1;
+                if (tail < head - 1) {
+                    tail++;
+                    *tail = v;
+                }
             }
             
         }
     }
-    void pop(int&a) {
-        if (v == 1)
-            std::cout << "cola vacia" << std::endl;
+    void pop(int& v) {
+        if (head == tail) {
+            v = *head;
+            head = 0;
+            tail = 0;
+        }
+        else if( head < tail) {
+            v = *head;
+            head++;
+        }
         else {
-            if (tail-head == 1) {
-                v = 1;
-                a = *head;
-                std::cout << *head << std::endl;
-                tail--;
-                return;
-            }
-            else {
-                std::cout << *head << std::endl;
-                a = *head;
-                for (int* p = head + 1; p < tail; p++)
-                    *(p - 1) = *p;
-                tail--;
-            }
-            ll = 0;
+            v = *head;
+            if (head == a + n - 1)               
+                head = a;           
+            else 
+                head++;            
         }
     }
     void print() {
-        if (v == 1) {
-            std::cout << "cola vacia" << std::endl;
-            return;
+        if (head < tail) {
+            for (int* i = head; i <= tail;i++) 
+                std::cout << *i;           
         }
-        for (int* p = head; p < tail; p++)
-            std::cout << *p << " ";
+        else {
+            for (int* i = head; i < a+n;i++) 
+                std::cout << *i;          
+            for (int* i = a; i <= tail;i++) 
+                std::cout << *i;
+        }
+       
         std::cout << std::endl;
-
+    }
+};
+class pila {
+public:
+    int* a;
+    int* top;
+    const int n = 4;
+    pila() {
+        top = 0;
+        a = new int[n];
+    }
+    void push(int v) {
+        if (top == 0) {
+            top = a;
+            *top = v;
+        }
+        else {
+            if (top < a + n - 1) {
+                top++;
+                *top = v;
+            }         
+        }
+    }
+    void pop(int& v) {
+        
+        if (top == a) {
+            v = *top;
+            top = 0;
+        }
+        else {
+            v = *top;
+            top--;
+        }
+            
+    }
+    void print() {
+        for (int* i = top; i >= a;i--)
+            std::cout << *i;
+        std::cout << std::endl;
     }
 };
 int main()
 {
-    
-    pila pilita;
-    for (int i = 1;i <= 10;i++) {
-        pilita.push(i);
+    cola ola;
+    int v;
+    for (int i = 0; i < 8; i++) {
+        ola.push(2);
     }
-    pilita.print();
-    pilita.push(1);
+    ola.print();
+    ola.pop(v);
+    ola.push(3);
+    ola.print();  
+    ola.pop(v);
+    ola.push(3);
+    ola.print();
 
-
-    int a;
-    for (int i = 0;i < 10;i++) {
-        pilita.pop(a);
-
+    pila ila;
+    for (int i = 0; i < 8; i++) {
+        ila.push(2);
     }
-    pilita.print();
-    
+    ila.print();
+    ila.pop(v);
+    ila.push(3);
+    ila.print();
+    ila.pop(v);
+    ila.push(4);
+    ila.print();
 
-    cola co;
-    for (int i = 1; i <= 10; i++) {
-        co.push(i);
-    }
-    co.print();
-    co.push(1);
-
-    int b;
-    for (int i = 0; i < 10; i++) {
-        co.pop(b);
-    }
-    co.print();
 }
