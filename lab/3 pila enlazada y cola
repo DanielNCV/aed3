@@ -1,19 +1,19 @@
 #include <iostream>
 struct nodo {
 	int A[5];
-	int* top=A;
-	nodo* next=NULL;
+	int* top = A;
+	nodo* next = NULL;
 };
 struct nodoCola {
 	int A[5];
 	int* tail = A;
 	nodoCola* next = NULL;
-        nodoCola* prev = 0;
+	nodoCola* prev = 0;
 
 };
 struct LinkedPile {
 
-	nodo* h=0;
+	nodo* h = 0;
 	void push(int v) {
 		if (!h) {
 			h = new nodo;
@@ -33,7 +33,22 @@ struct LinkedPile {
 				h->top++;
 			}
 		}
-		
+
+	}
+	void pop(int& v) {
+		if (!h) {
+			std::cout << "La pila está vacía." << std::endl;
+		}
+		else {
+			h->top--;
+			v = *(h->top);
+			if (h->top == h->A) {
+				nodo* tmp = h;
+				h = h->next;
+				delete tmp;
+			}
+			
+		}
 	}
 };
 struct LinkedCola {
@@ -42,7 +57,7 @@ struct LinkedCola {
 	void push(int v) {
 		if (!h) {
 			h = new nodoCola;
-			t=h;
+			t = h;
 			*(h->tail) = v;
 			h->tail++;
 		}
@@ -56,28 +71,41 @@ struct LinkedCola {
 				*(tmp->tail) = v;
 				tmp->tail++;
 				t->next = tmp;
-                                nodoCola* tmp1=t;
+				nodoCola* tmp1 = t;
 				t = t->next;
-                                t->prev=tmp1;
+				t->prev = tmp1;
 			}
 		}
 	}
-        void pop(){
-         if(!h){
-           return;
-	 }
-         else{
-           if(t->tail==t->A){
-             std::cout<<*(t->tail -1)<<" ";
-	   }
-	 }
-        }
+	void pop(int&v) {
+		if (!h) {
+			std::cout << "La cola está vacía." << std::endl;
+		}
+		else {
+			v = *(h->A);
+			for (int i = 0; i < 4 && (h->A + i + 1) < h->tail; i++) {
+				h->A[i] = h->A[i + 1];
+			}
+			h->tail--;
+			if (h->A == h->tail) {
+				nodoCola* tmp = h;
+				h = h->next;
+				if (h) {
+					h->prev = nullptr;
+				}
+				if (t == tmp) {
+					t = nullptr;
+				}
+				delete tmp;
+			}
+		}
+	}
 };
-void printpila(nodo*a) {
-	
+void printpila(nodo* a) {
+
 	for (nodo* p = a;p;p = p->next) {
-		for (int* q = p->top-1;q >= p->A;q--)
-			std::cout << *q<< " ";
+		for (int* q = p->top - 1;q >= p->A;q--)
+			std::cout << *q << " ";
 	}
 	std::cout << std::endl;
 
@@ -87,12 +115,12 @@ void printCola(nodoCola* a) {
 		for (int* q = p->A;q < p->tail;q++)
 			std::cout << *q << " ";
 	}
-	std::cout<<std::endl;
+	std::cout << std::endl;
 
 }
 int main()
 {
-	
+	int v;
 	LinkedPile pp;
 	pp.push(1);
 	pp.push(2);
@@ -107,7 +135,7 @@ int main()
 	pp.push(5);
 
 	printpila(pp.h);
-	
+
 	LinkedCola c;
 	c.push(1);
 	c.push(2);
