@@ -1,3 +1,5 @@
+//pintar tios primos, c/uno con color distinto
+
 bool abu_tio(int n) {
     nodo** p;
     p = &root;
