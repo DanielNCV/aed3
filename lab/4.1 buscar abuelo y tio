@@ -1,0 +1,50 @@
+bool abu_tio(int n) {
+    nodo** p;
+    p = &root;
+    nodo** q = &((*p)->nodos[0]);
+    nodo** r = &((*p)->nodos[1]);
+    if ((*p) && (*p)->v != n) {
+        if ((*p)->v > n) {
+            if (*q && (*q)->v != n) {
+                nodo** q1 = &((*q)->nodos[(*q)->v < n]);
+                while (*q1 && (*q1)->v != n) {
+                    p = q;
+                    q = q1;
+                    q1 = &((*q1)->nodos[(*q1)->v < n]);
+                }
+                if (*q1 && (*q1)->v == n) {
+                    std::cout << (*p)->v << "\n"; // abue  
+                    if ((*p)->nodos[(*r)->v > n])
+                        std::cout << (*p)->nodos[(*q)->v > n]->v << "\n"; // tio   
+
+                }
+                else {
+
+                }
+            }
+            
+        }
+        else {
+            if (*r && (*r)->v != n) {
+                nodo** r1 = &((*r)->nodos[(*r)->v < n]);
+                while (*r1 && (*r1)->v != n)
+                {
+                    p = r;
+                    r = r1;
+                    r1 = &((*r1)->nodos[(*r1)->v < n]);
+                }
+                if (*r1 && (*r1)->v == n)
+                {
+                    std::cout << (*p)->v << "\n"; // abue   
+                    if((*p)->nodos[(*r)->v > n])
+                        std::cout << (*p)->nodos[(*r)->v > n]->v << "\n"; // tio   
+                }
+                else {
+                }
+            }
+            
+        }
+    }
+    else
+        return 0;
+}
