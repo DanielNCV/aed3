@@ -1,0 +1,130 @@
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <cmath>
+#include <string>
+
+using namespace sf;
+using namespace std;
+
+unsigned int width = 1000;
+unsigned int height = 1000;
+
+sf::Font font("arial.ttf");
+struct nodo {
+    int v;
+    nodo* nodos[2];
+    nodo(int n, nodo* n1, nodo* n2) {
+        v = n;
+        nodos[0] = n1;
+        nodos[1] = n2;
+    }
+};
+
+struct ArbolBinario {
+    nodo* root = 0;
+    bool pivot = 0;
+    bool find(int n, nodo**& p);
+    void ins(int n);
+    void rem(int n);
+};
+bool ArbolBinario::find(int n, nodo**& p) {
+    p = &root;
+    for (;*p && (*p)->v != n;p = &(*p)->nodos[(*p)->v < n]);
+    return (*p) && (*p)->v == n;
+}
+void ArbolBinario::ins(int n) {
+    nodo** p;
+    if (find(n, p)) return;
+    *p = new nodo(n, 0, 0);
+}
+void ArbolBinario::rem(int n) {
+    nodo** p;
+    if (!find(n, p)) return;
+    if ((*p)->nodos[0] && (*p)->nodos[1]) {
+        nodo** q = &(*p)->nodos[pivot];
+        for (;(*q)->nodos[!pivot];q = &(*q)->nodos[!pivot]);
+        (*p)->v = (*q)->v;
+        p = q;
+        pivot = !pivot;
+    }
+    nodo* tmp = *p;
+    *p = (*p)->nodos[(*p)->nodos[0] != 0];
+    delete tmp;
+}
+
+
+void InOrder(float x, float y, float xx ,nodo* p, vector<CircleShape> &v, vector<Text*> &v2, vector<VertexArray*> & v3) {
+    if (!p)
+        return;
+    
+    InOrder(x - xx,y*3/2, xx/2, p->nodos[0], v,v2,v3);   
+    sf::CircleShape c2(30.0f); //el radio
+    c2.setOrigin(c2.getGeometricCenter());
+    c2.setPosition({ x, y });
+    v.push_back(c2);
+
+    sf::Text* text = new sf::Text(font);
+    text->setString(to_string(p->v));
+    text->setCharacterSize(24); 
+    text->setFillColor(sf::Color::Red);
+    text->setStyle(sf::Text::Bold | sf::Text::Underlined);
+    text->setPosition({ x-7.f, y-13.f });
+    v2.push_back(text);
+
+    sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+    (*linea1)[0].position = { x,y };
+    (*linea1)[1].position = { x - xx,y * 3 / 2 };
+    
+    v3.push_back(linea1);
+    InOrder(x + xx, y*3/2, xx/2 ,p->nodos[1],v,v2,v3);
+    sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+    (*linea2)[0].position = { x,y };
+    (*linea2)[1].position = { x + xx,y * 3 / 2 };
+    v3.push_back(linea2);
+}
+
+
+int main() {
+    
+    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode({ width,height }), "ola");
+    window->setFramerateLimit(60);
+
+    //shapes
+
+    ArbolBinario a;
+    int altura = 3;
+    float xx = width/ (pow(2, altura - 1));
+    vector<int> contenido = { 10,5,13,2,7,15};
+    for (int i = 0; i < contenido.size();i++)
+        a.ins(contenido[i]);
+    
+
+    vector<CircleShape> v;
+    vector<Text*> v2;
+    vector<VertexArray*> v3;
+
+    InOrder(width / 2.0f, height / (float)(altura*2),xx , a.root, v,v2,v3);
+
+    while (window->isOpen())
+    {
+        while (const std::optional event = window->pollEvent()) {
+            if (event->is <sf::Event::Closed>()) {
+                window->close();
+            }
+        }
+        window->clear();
+        for (int i = 0; i < v.size(); i++) {
+            window->draw(v[i]);
+            window->draw(*v2[i]);
+        }
+        for (auto linea : v3) {
+            window->draw(*linea);
+        }
+
+        window->display();
+
+    }
+    delete window;
+    return 0;
+}
