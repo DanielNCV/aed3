@@ -16,9 +16,16 @@ bool abu_tio(int n) {
                 }
                 if (*q1 && (*q1)->v == n) {
                     std::cout << (*p)->v << "\n"; // abue  
-                    if ((*p)->nodos[(*r)->v > n])
-                        std::cout << (*p)->nodos[(*q)->v > n]->v << "\n"; // tio   
-
+                    if ((*p)->nodos[(*r)->v > n]) {
+                        std::cout << (*p)->nodos[(*q)->v > n]->v << "\n"; // tio 
+                        if ((*p)->nodos[(*r)->v > n]->nodos[0]) {
+                            std::cout << (*p)->nodos[(*q)->v > n]->nodos[0]->v << "\n"; // primo 
+                        }
+                        if ((*p)->nodos[(*r)->v > n]->nodos[1]) {
+                            std::cout << (*p)->nodos[(*q)->v > n]->nodos[1]->v << "\n"; // prima  
+                        }
+                    }
+                        
                 }
                 else {
 
@@ -38,8 +45,16 @@ bool abu_tio(int n) {
                 if (*r1 && (*r1)->v == n)
                 {
                     std::cout << (*p)->v << "\n"; // abue   
-                    if((*p)->nodos[(*r)->v > n])
-                        std::cout << (*p)->nodos[(*r)->v > n]->v << "\n"; // tio   
+                    if ((*p)->nodos[(*r)->v > n]) {
+                        std::cout << (*p)->nodos[(*r)->v > n]->v << "\n"; // tio  
+                        if ((*p)->nodos[(*r)->v > n]->nodos[0]) {
+                            std::cout << (*p)->nodos[(*r)->v > n]->nodos[0]->v << "\n"; // primo 
+                        }
+                        if ((*p)->nodos[(*r)->v > n]->nodos[1]) {
+                            std::cout << (*p)->nodos[(*r)->v > n]->nodos[1]->v << "\n"; // prima  
+                        }
+                    }
+                         
                 }
                 else {
                 }
