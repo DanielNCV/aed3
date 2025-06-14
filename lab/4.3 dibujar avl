@@ -1,1 +1,210 @@
-//solo graficar
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <cmath>
+#include <string>
+
+using namespace sf;
+using namespace std;
+
+unsigned int width = 1000;
+unsigned int height = 1000;
+
+sf::Font font("arial.ttf");
+template<class T>
+struct nodo {
+    T v;
+    nodo* nodos[2];
+    int altura;
+    int dif_altura;
+    nodo(T valor) {
+        v = valor;
+        nodos[0] = nodos[1] = 0;
+        altura = 0;
+        dif_altura = 0;
+    }
+};
+template <class T>
+class ArbolBinario {
+public:
+    nodo<T>* root = NULL;
+    int altura = 0;
+    bool find(nodo<T>**& p, T n, vector<nodo<T>**>& vec);
+    void add(T n);
+    void del(T n);
+
+    bool turno = 0;
+
+};
+template<class T>
+bool ArbolBinario<T>::find(nodo<T>**& p, T n, vector<nodo<T>**>& vec) {
+    p = &root;
+    for (;*p && (*p)->v != n;p = &(*p)->nodos[(*p)->v < n])
+        vec.push_back(p);
+    vec.push_back(p);
+    return (*p && (*p)->v == n);
+}
+template <class T>
+void ArbolBinario<T>::add(T n) {
+    nodo<T>** p;
+    vector<nodo<T>**> vec;
+    if (!find(p, n, vec)) {
+        *p = new nodo<T>(n);
+        for (int i = (int)vec.size() - 1; i >= 0;i--) {
+            if ((*vec[i])->nodos[0] && (*vec[i])->nodos[1]) {
+                if (((*vec[i])->altura == (*vec[i])->nodos[0]->altura) || ((*vec[i])->altura == (*vec[i])->nodos[1]->altura))
+                    (*vec[i])->altura++;
+                (*vec[i])->dif_altura = (*vec[i])->nodos[1]->altura - (*vec[i])->nodos[0]->altura;
+            }
+            else {
+                (*vec[i])->altura++;
+                if ((*vec[i])->nodos[0])
+                    (*vec[i])->dif_altura = -(*vec[i])->nodos[0]->altura;
+                else if ((*vec[i])->nodos[1])
+                    (*vec[i])->dif_altura = (*vec[i])->nodos[1]->altura;
+            }
+            //std::cout << (*vec[i])->v << " " << (*vec[i])->dif_altura << "\n";
+            if ((*vec[i])->dif_altura == 2 && (*vec[i + 1])->dif_altura == 1) {
+                nodo<T>* tmp1 = (*vec[i + 1])->nodos[0];
+                nodo<T>* tmp2 = *vec[i];
+                *vec[i] = *vec[i + 1];
+                tmp2->nodos[1] = tmp1;
+                tmp2->altura = tmp2->altura - 2;
+                (*vec[i])->nodos[0] = tmp2;
+            }
+            else if ((*vec[i])->dif_altura == -2 && (*vec[i + 1])->dif_altura == -1) {
+                nodo<T>* tmp1 = (*vec[i + 1])->nodos[1];
+                nodo<T>* tmp2 = *vec[i];
+                *vec[i] = *vec[i + 1];
+                tmp2->nodos[0] = tmp1;
+                tmp2->altura = tmp2->altura - 2;
+                (*vec[i])->nodos[1] = tmp2;
+            }
+            else if ((*vec[i])->dif_altura == -2 || (*vec[i])->dif_altura == 2) {
+                nodo<T>* tmp1 = (*vec[i + 2])->nodos[0];
+                nodo<T>* tmp2 = (*vec[i + 2])->nodos[1];
+                nodo<T>* tmp3 = *vec[i];
+                nodo<T>* tmp4 = *vec[i + 1];
+                *vec[i] = *vec[i + 2];
+                (*vec[i])->nodos[tmp3->v > (*vec[i])->v] = tmp3;
+                (*vec[i])->nodos[tmp4->v > (*vec[i])->v] = tmp4;
+                (*vec[i])->nodos[0]->nodos[1] = tmp1;
+                (*vec[i])->nodos[1]->nodos[0] = tmp2;
+                tmp3->altura = tmp3->altura - 2;
+                tmp4->altura--;
+                (*vec[i])->altura++;
+            }
+        }
+        //cout << endl;
+    }
+}
+template <class T>
+void ArbolBinario<T>::del(T n) {
+    nodo<T>** p;
+    vector<nodo<T>**> vec;
+    if (find(p, n, vec)) {
+        if ((*p)->nodos[0] != 0 && (*p)->nodos[1] != 0) {
+            nodo<T>** q = &(*p)->nodos[turno];
+            turno = !turno;
+            for (;(*q)->nodos[turno];q = &(*q)->nodos[turno]);
+            (*p)->v = (*q)->v;
+            p = q;
+        }
+        nodo<T>* tmp = *p;
+        *p = (*p)->nodos[(*p)->nodos[1] != 0];
+        delete tmp;
+    }
+}
+template<class T>
+void InOrder(float x, float y, float xx, nodo<T>* p, vector<CircleShape>& v, vector<Text*>& v2, vector<VertexArray*>& v3) {
+    if (!p)
+        return;
+
+    InOrder(x - xx, y * 3 / 2, xx / 2, p->nodos[0], v, v2, v3);
+    sf::CircleShape c2(30.0f); //el radio
+    c2.setOrigin(c2.getGeometricCenter());
+    c2.setPosition({ x, y });
+    v.push_back(c2);
+
+    sf::Text* text = new sf::Text(font);
+    text->setString(to_string(p->v));
+    text->setCharacterSize(24);
+    text->setFillColor(sf::Color::Red);
+    text->setStyle(sf::Text::Bold | sf::Text::Underlined);
+    text->setPosition({ x - 7.f, y - 13.f });
+    v2.push_back(text);
+
+    sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+    (*linea1)[0].position = { x,y };
+    (*linea1)[1].position = { x - xx,y * 3 / 2 };
+    v3.push_back(linea1);
+    InOrder(x + xx, y * 3 / 2, xx / 2, p->nodos[1], v, v2, v3);
+    sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+    (*linea2)[0].position = { x,y };
+    (*linea2)[1].position = { x + xx,y * 3 / 2 };
+
+    v3.push_back(linea2);
+}
+
+
+
+
+int main() {
+
+    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode({ width,height }), "ola");
+    window->setFramerateLimit(60);
+
+    //shapes
+
+    ArbolBinario<int> a;
+    int altura = 4;
+    float xx = width / (pow(2, altura - 1));
+
+    vector<int> aaa;
+    for (int i = 0; i < 6;i++) {
+        aaa.push_back(rand() % 20);
+        a.add(aaa[i]);
+    }
+    a.add(10);
+    for (auto i : aaa)
+        cout << i << " ";
+    cout << endl;
+    a.add(5);
+    a.add(6);
+    a.add(7);
+
+
+
+
+    string stir = "11";
+    int yyy = stoi(stir);
+    cout << endl;
+
+    vector<CircleShape> v;
+    vector<Text*> v2;
+    vector<VertexArray*> v3;
+
+    InOrder(width / 2.0f, height / (float)(altura * 2), xx, a.root, v, v2, v3);
+
+    while (window->isOpen())
+    {
+        while (const std::optional event = window->pollEvent()) {
+            if (event->is <sf::Event::Closed>()) {
+                window->close();
+            }
+        }
+        window->clear();
+        for (int i = 0; i < v.size(); i++) {
+            window->draw(v[i]);
+            window->draw(*v2[i]);
+        }
+        for (auto linea : v3) {
+            window->draw(*linea);
+        }
+
+        window->display();
+
+    }
+    delete window;
+    return 0;
+}
