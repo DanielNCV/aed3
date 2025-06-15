@@ -37,7 +37,6 @@ bool ArbolBinario<T>::find(nodo<T>**& p, T n, vector<nodo<T>**> &vec) {
     for (;*p && (*p)->v != n;p = &(*p)->nodos[(*p)->v < n])
         vec.push_back(p);
     vec.push_back(p);
-    
     return (*p && (*p)->v == n);
 }
 template <class T>
@@ -60,6 +59,7 @@ void ArbolBinario<T>::add(T n) {
                     (*vec[i])->dif_altura = (*vec[i])->nodos[1]->altura;                
             }
             //std::cout << (*vec[i])->v << " " << (*vec[i])->dif_altura << "\n";
+            
             if ((*vec[i])->dif_altura == 2 && (*vec[i + 1])->dif_altura == 1) {
                 nodo<T>* tmp1 = (*vec[i + 1])->nodos[0];
                 nodo<T>* tmp2 = *vec[i];
@@ -90,29 +90,97 @@ void ArbolBinario<T>::add(T n) {
                 tmp4->altura--;
                 (*vec[i])->altura++;
             }
-
         }       
         //cout << endl;
-    }
-    
+    }   
 }
 template <class T>
 void ArbolBinario<T>::del(T n) {
     nodo<T>** p;
-    vector<nodo<T>*> vec;
+    vector<nodo<T>**> vec;
     if (find(p, n,vec)) {
         if ((*p)->nodos[0] != 0 && (*p)->nodos[1] != 0) {
             nodo<T>** q = &(*p)->nodos[turno];
             turno = !turno;
-            for (;(*q)->nodos[turno];q = &(*q)->nodos[turno]);
+            for (;(*q)->nodos[turno];q = &(*q)->nodos[turno]) {
+                vec.push_back(q);
+            }
+            vec.push_back(q);
             (*p)->v = (*q)->v;
             p = q;
         }
+              
         nodo<T>* tmp = *p;
         *p = (*p)->nodos[(*p)->nodos[1] != 0];
         delete tmp;
+        vec.pop_back();
+        for (int i = (int)vec.size() - 1; i >= 0;i--) {
+            
+            if ((*vec[i])->nodos[0] && (*vec[i])->nodos[1]) {
+                if ((*vec[i])->altura- (*vec[i])->nodos[0]->altura  > 1 && (*vec[i])->altura -(*vec[i])->nodos[1]->altura > 1)
+                    (*vec[i])->altura--;
+                (*vec[i])->dif_altura = (*vec[i])->nodos[1]->altura - (*vec[i])->nodos[0]->altura;                              
+            }
+            
+            else {
+                if ((*vec[i])->nodos[0] || (*vec[i])->nodos[1]  ) {
+                    if((*vec[i])->altura - (*vec[i])->nodos[!(*vec[i])->nodos[0]]->altura > 1)
+                        (*vec[i])->altura--;
+                    else if( (*vec[i])->nodos[1] )
+                        (*vec[i])->dif_altura = (*vec[i])->nodos[1]->altura;
+                    else if ( (*vec[i])->nodos[0] )
+                        (*vec[i])->dif_altura = -(*vec[i])->nodos[0]->altura;
+                }                   
+                else if( !(*vec[i])->nodos[0] && !(*vec[i])->nodos[1]) {
+                    (*vec[i])->altura--;
+                    (*vec[i])->dif_altura = 0;
+                }                
+            }
+            std::cout << (*vec[i])->v << " " << (*vec[i])->dif_altura << "\n";
+            if ((*vec[i])->dif_altura == 2 && (*vec[i])->nodos[1]->dif_altura == 1) {
+                nodo<T>* tmp1 = (*vec[i])->nodos[1]->nodos[0];
+                nodo<T>* tmp2 = *vec[i];
+                *vec[i] = (*vec[i])->nodos[1];
+                tmp2->nodos[1] = tmp1;
+                tmp2->altura = tmp2->altura - 2;
+                (*vec[i])->nodos[0] = tmp2;
+            }
+            else if ((*vec[i])->dif_altura == -2 && (*vec[i])->nodos[0]->dif_altura == -1) {
+                nodo<T>* tmp1 = (*vec[i])->nodos[0]->nodos[1];
+                nodo<T>* tmp2 = *vec[i];
+                *vec[i] = (*vec[i])->nodos[0];
+                tmp2->nodos[0] = tmp1;
+                tmp2->altura = tmp2->altura - 2;
+                (*vec[i])->nodos[1] = tmp2;
+            }
+            else if ((*vec[i])->dif_altura == -2 || (*vec[i])->dif_altura == 2) {
+                nodo<T>* tmp1, * tmp2, * tmp3, * tmp4;
+                if ((*vec[i])->nodos[0]) {
+                    tmp1 = (*vec[i])->nodos[0]->nodos[1]->nodos[0]; //voy al nodo que exite, y de ese nodo busco el que existe
+                    tmp2 = (*vec[i])->nodos[0]->nodos[1]->nodos[1];
+                    tmp3 = *vec[i];
+                    tmp4 = (*vec[i])->nodos[0];
+                }
+                else {
+                    tmp1 = (*vec[i])->nodos[1]->nodos[0]->nodos[0]; //voy al nodo que exite, y de ese nodo busco el que existe
+                    tmp2 = (*vec[i])->nodos[1]->nodos[0]->nodos[1];
+                    tmp3 = *vec[i];
+                    tmp4 = (*vec[i])->nodos[1];
+                }
+                *vec[i] = (*vec[i])->nodos[!(*vec[i])->nodos[0]]->nodos[(*vec[i])->nodos[0]!=0];
+                (*vec[i])->nodos[tmp3->v > (*vec[i])->v] = tmp3;
+                (*vec[i])->nodos[tmp4->v > (*vec[i])->v] = tmp4;
+                (*vec[i])->nodos[0]->nodos[1] = tmp1;
+                (*vec[i])->nodos[1]->nodos[0] = tmp2;
+                tmp3->altura = tmp3->altura - 2;
+                tmp4->altura--;
+                (*vec[i])->altura++;
+            }
+        }
+        cout << endl;
     }
 }
+
 template<class T>
 void ArbolBinario<T>::print(nodo<T>* n) {
     if (!n)
@@ -127,13 +195,24 @@ int main()
     ArbolBinario<int> b;
 
     vector<int> aaa;
-    for (int i = 0; i < 6;i++) {
-        aaa.push_back(rand() % 20);
-        b.add(aaa[i]);  
-    }
+    
+    //for (int i = 0; i < 10;i++) {
+      //  aaa.push_back(rand() % 20);
+       // b.add(aaa[i]);
+    //
+    
+    //for (int i = 0; i < 6;i++)
+        //b.add(i);
+    b.add(8);
+    b.add(3);
     b.add(10);
-    for (auto i : aaa)
-        cout << i<< " ";
+    b.add(5);
     b.print(b.root);
     cout << endl;
+    b.del(10);
+    b.print(b.root);
+
+
+    cout << endl;
+    cout << b.root->v;
 }
