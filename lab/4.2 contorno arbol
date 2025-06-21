@@ -73,16 +73,24 @@ void InOrder(float x, float y, float xx ,nodo* p, vector<CircleShape> &v, vector
     text->setPosition({ x-7.f, y-13.f });
     v2.push_back(text);
 
-    sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-    (*linea1)[0].position = { x,y };
-    (*linea1)[1].position = { x - xx,y * 3 / 2 };
-    v3.push_back(linea1);
-    InOrder(x + xx, y*3/2, xx/2 ,p->nodos[1],v,v2,v3);
-    sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-    (*linea2)[0].position = { x,y };
-    (*linea2)[1].position = { x + xx,y * 3 / 2 };
+    if(p->nodos[0]){
+        sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea1)[0].position = { x,y };
+        (*linea1)[1].position = { x - xx,y * 3 / 2 };
+        v3.push_back(linea1);
+    }
+    
 
-    v3.push_back(linea2);
+    InOrder(x + xx, y*3/2, xx/2 ,p->nodos[1],v,v2,v3);
+
+    if (p->nodos[1]) {
+        sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea2)[0].position = { x,y };
+        (*linea2)[1].position = { x + xx,y * 3 / 2 };
+        v3.push_back(linea2);
+    }
+
+    
 }
 void pintar(int n, vector<CircleShape>& v, vector<Text*>& v2) {
     for (int j = 0; j < (int)v2.size(); j++)
