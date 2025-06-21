@@ -149,8 +149,7 @@ int main() {
 
     ArbolBinario a;
 
-    // Create an array with size that's a power of 2
-    vector<int> values = { 5, 3, 8, 2, 4, 6, 9, 1 }; // Example values (size 8)
+    vector<int> values = { 5, 3, 8, 2, 4, 6, 9, 1 }; 
 
     // Create the sum tree
     a.createSumTree(values);
