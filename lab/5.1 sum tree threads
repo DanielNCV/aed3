@@ -1,0 +1,262 @@
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <cmath>
+#include <string>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
+
+using namespace sf;
+using namespace std;
+
+unsigned int width = 1000;
+unsigned int height = 1000;
+
+sf::Font font("arial.ttf");
+
+struct nodo {
+    int v;
+    nodo* nodos[2];
+    nodo(int n, nodo* n1, nodo* n2) {
+        v = n;
+        nodos[0] = n1;
+        nodos[1] = n2;
+    }
+};
+
+struct ArbolBinario {
+    nodo* root = 0;
+    bool pivot = 0;
+    bool find(int n, nodo**& p);
+    void ins(int n);
+    void rem(int n);
+    
+    // New function to create sum tree with threads
+    void createSumTreeMultiThread(vector<int>& values);
+};
+
+bool ArbolBinario::find(int n, nodo**& p) {
+    p = &root;
+    for (;*p && (*p)->v != n;p = &(*p)->nodos[(*p)->v < n]);
+    return (*p) && (*p)->v == n;
+}
+
+void ArbolBinario::ins(int n) {
+    nodo** p;
+    if (find(n, p)) return;
+    *p = new nodo(n, 0, 0);
+}
+
+void ArbolBinario::rem(int n) {
+    nodo** p;
+    if (!find(n, p)) return;
+    if ((*p)->nodos[0] && (*p)->nodos[1]) {
+        nodo** q = &(*p)->nodos[pivot];
+        for (;(*q)->nodos[!pivot];q = &(*q)->nodos[!pivot]);
+        (*p)->v = (*q)->v;
+        p = q;
+        pivot = !pivot;
+    }
+    nodo* tmp = *p;
+    *p = (*p)->nodos[(*p)->nodos[0] != 0];
+    delete tmp;
+}
+
+// Thread synchronization variables
+mutex mtx;
+condition_variable cv;
+queue<pair<nodo*, nodo*>> workQueue;
+atomic<bool> done(false);
+atomic<int> threadsFinished(0);
+const int NUM_THREADS = 4;
+
+void workerThread(queue<nodo*>& nextLevel) {
+    while (true) {
+        pair<nodo*, nodo*> children;
+        
+        {
+            unique_lock<mutex> lock(mtx);
+            cv.wait(lock, []{ return !workQueue.empty() || done.load(); });
+            
+            if (done.load() && workQueue.empty()) {
+                threadsFinished++;
+                cv.notify_all();
+                return;
+            }
+            
+            if (!workQueue.empty()) {
+                children = workQueue.front();
+                workQueue.pop();
+            } else {
+                continue;
+            }
+        }
+        
+        // Create parent with sum of children
+        int sum = children.first->v + children.second->v;
+        nodo* parent = new nodo(sum, children.first, children.second);
+        
+        {
+            lock_guard<mutex> lock(mtx);
+            nextLevel.push(parent);
+        }
+    }
+}
+
+void ArbolBinario::createSumTreeMultiThread(vector<int>& values) {
+    // First, clear the existing tree
+    root = 0;
+    
+    // Check if input size is power of 2
+    if ((values.size() & (values.size() - 1)) != 0) {
+        cout << "Input size must be a power of 2" << endl;
+        return;
+    }
+    
+    // Create leaf nodes first
+    queue<nodo*> currentLevel;
+    for (int val : values) {
+        currentLevel.push(new nodo(val, nullptr, nullptr));
+    }
+    
+    // Create worker threads
+    vector<thread> workers;
+    queue<nodo*> nextLevel;
+    
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        workers.emplace_back(workerThread, ref(nextLevel));
+    }
+    
+    // Build tree level by level
+    while (currentLevel.size() > 1) {
+        // Prepare work for threads
+        {
+            lock_guard<mutex> lock(mtx);
+            while (currentLevel.size() >= 2) {
+                nodo* left = currentLevel.front();
+                currentLevel.pop();
+                nodo* right = currentLevel.front();
+                currentLevel.pop();
+                workQueue.push({left, right});
+            }
+            cv.notify_all();
+        }
+        
+        // Wait for threads to finish processing
+        {
+            unique_lock<mutex> lock(mtx);
+            cv.wait(lock, [&currentLevel]{
+                return workQueue.empty() && 
+                      (currentLevel.size() <= 1 || threadsFinished == NUM_THREADS);
+            });
+        }
+        
+        // Move to next level
+        swap(currentLevel, nextLevel);
+        threadsFinished = 0;
+        done = false;
+    }
+    
+    // Signal threads to exit
+    {
+        lock_guard<mutex> lock(mtx);
+        done = true;
+        cv.notify_all();
+    }
+    
+    // Join all threads
+    for (auto& t : workers) {
+        t.join();
+    }
+    
+    // The last remaining node is the root
+    root = currentLevel.front();
+}
+
+void InOrder(float x, float y, float xx, nodo* p, vector<CircleShape>& v, vector<Text*>& v2, vector<VertexArray*>& v3) {
+    if (!p)
+        return;
+
+    InOrder(x - xx, y * 3 / 2, xx / 2, p->nodos[0], v, v2, v3);
+    sf::CircleShape c2(30.0f); //el radio
+    c2.setOrigin(c2.getGeometricCenter());
+    c2.setPosition({ x, y });
+    v.push_back(c2);
+
+    sf::Text* text = new sf::Text(font);
+    text->setString(to_string(p->v));
+    text->setCharacterSize(24);
+    text->setFillColor(sf::Color::Red);
+    text->setStyle(sf::Text::Bold | sf::Text::Underlined);
+    text->setPosition({ x - 7.f, y - 13.f });
+    v2.push_back(text);
+
+    if (p->nodos[0]) {
+        sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea1)[0].position = { x,y };
+        (*linea1)[1].position = { x - xx,y * 3 / 2 };
+        v3.push_back(linea1);
+    }
+    
+    InOrder(x + xx, y * 3 / 2, xx / 2, p->nodos[1], v, v2, v3);
+    
+    if (p->nodos[1]) {
+        sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea2)[0].position = { x,y };
+        (*linea2)[1].position = { x + xx,y * 3 / 2 };
+        v3.push_back(linea2);
+    }
+}
+
+int main() {
+    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode({ width,height }), "Sum Tree Visualization with 4 Threads");
+    window->setFramerateLimit(60);
+
+    ArbolBinario a;
+    
+    // Create an array with size that's a power of 2
+    vector<int> values;
+    for (int i = 1; i <= 16; i++) {
+        values.push_back(i); // Example values (size 16)
+    }
+    
+    // Create the sum tree with multiple threads
+    a.createSumTreeMultiThread(values);
+    
+    // Calculate tree height (log2 of leaf count + 1)
+    int altura = log2(values.size()) + 1;
+    float xx = width / (pow(2, altura - 1));
+    
+    vector<CircleShape> v;
+    vector<Text*> v2;
+    vector<VertexArray*> v3;
+
+    InOrder(width / 2.0f, height / (float)(altura * 2), xx, a.root, v, v2, v3);
+
+    while (window->isOpen()) {
+        while (const std::optional event = window->pollEvent()) {
+            if (event->is <sf::Event::Closed>()) {
+                window->close();
+            }
+        }
+        window->clear();
+        for (int i = 0; i < v.size(); i++) {
+            window->draw(v[i]);
+            window->draw(*v2[i]);
+        }
+        for (auto linea : v3) {
+            window->draw(*linea);
+        }
+        window->display();
+    }
+    
+    // Clean up
+    for (auto text : v2) delete text;
+    for (auto line : v3) delete line;
+    delete window;
+    
+    return 0;
+}
