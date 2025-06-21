@@ -72,16 +72,23 @@ void InOrder(float x, float y, float xx ,nodo* p, vector<CircleShape> &v, vector
     text->setPosition({ x-7.f, y-13.f });
     v2.push_back(text);
 
-    sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-    (*linea1)[0].position = { x,y };
-    (*linea1)[1].position = { x - xx,y * 3 / 2 };
-    v3.push_back(linea1);
+    if(p->nodos[0]) {
+        sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea1)[0].position = { x,y };
+        (*linea1)[1].position = { x - xx,y * 3 / 2 };
+        v3.push_back(linea1);
+    }
+    
     InOrder(x + xx, y*3/2, xx/2 ,p->nodos[1],v,v2,v3);
-    sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-    (*linea2)[0].position = { x,y };
-    (*linea2)[1].position = { x + xx,y * 3 / 2 };
 
-    v3.push_back(linea2);
+    if (p->nodos[1]) {
+        sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea2)[0].position = { x,y };
+        (*linea2)[1].position = { x + xx,y * 3 / 2 };
+        v3.push_back(linea2);
+    }
+
+    
 }
 
 
@@ -185,9 +192,9 @@ int main() {
     //shapes
 
     ArbolBinario a;
-    int altura = 4;
+    int altura = 3;
     float xx = width/ (pow(2, altura - 1));
-    vector<int> contenido = { 51,33,70,21,37,84, 92,100};
+    vector<int> contenido = { 51,33,70,21,37,84, 92,100, 75, 73, 82};
     for (int i = 0; i < contenido.size();i++)
         a.ins(contenido[i]);
     
@@ -198,7 +205,7 @@ int main() {
 
     InOrder(width / 2.0f, height / (float)(altura*2),xx , a.root, v,v2,v3);
 
-    pintar_tio_primos(21, &a.root,v,v2);
+    pintar_tio_primos(100, &a.root,v,v2);
 
     while (window->isOpen())
     {
