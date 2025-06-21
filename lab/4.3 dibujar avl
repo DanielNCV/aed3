@@ -7,7 +7,7 @@
 using namespace sf;
 using namespace std;
 
-unsigned int width = 1000;
+unsigned int width = 1500;
 unsigned int height = 1000;
 
 sf::Font font("arial.ttf");
@@ -28,7 +28,7 @@ template <class T>
 class ArbolBinario {
 public:
     nodo<T>* root = NULL;
-    int altura = 0;
+    //int altura = 0;
     bool find(nodo<T>**& p, T n, vector<nodo<T>**>& vec);
     void add(T n);
     void del(T n);
@@ -63,7 +63,7 @@ void ArbolBinario<T>::add(T n) {
                 else if ((*vec[i])->nodos[1])
                     (*vec[i])->dif_altura = (*vec[i])->nodos[1]->altura;
             }
-            //std::cout << (*vec[i])->v << " " << (*vec[i])->dif_altura << "\n";
+            std::cout << (*vec[i])->v << " " << (*vec[i])->altura << "\n";
             if ((*vec[i])->dif_altura == 2 && (*vec[i + 1])->dif_altura == 1) {
                 nodo<T>* tmp1 = (*vec[i + 1])->nodos[0];
                 nodo<T>* tmp2 = *vec[i];
@@ -95,7 +95,7 @@ void ArbolBinario<T>::add(T n) {
                 (*vec[i])->altura++;
             }
         }
-        //cout << endl;
+        cout << endl;
     }
 }
 template <class T>
@@ -134,16 +134,21 @@ void InOrder(float x, float y, float xx, nodo<T>* p, vector<CircleShape>& v, vec
     text->setPosition({ x - 7.f, y - 13.f });
     v2.push_back(text);
 
-    sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-    (*linea1)[0].position = { x,y };
-    (*linea1)[1].position = { x - xx,y * 3 / 2 };
-    v3.push_back(linea1);
+    if (p->nodos[0]) {
+        sf::VertexArray* linea1 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea1)[0].position = { x,y };
+        (*linea1)[1].position = { x - xx,y * 3 / 2 };
+        v3.push_back(linea1);
+    }
+    
     InOrder(x + xx, y * 3 / 2, xx / 2, p->nodos[1], v, v2, v3);
-    sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-    (*linea2)[0].position = { x,y };
-    (*linea2)[1].position = { x + xx,y * 3 / 2 };
-
-    v3.push_back(linea2);
+    if (p->nodos[0]) {
+        sf::VertexArray* linea2 = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
+        (*linea2)[0].position = { x,y };
+        (*linea2)[1].position = { x + xx,y * 3 / 2 };
+        v3.push_back(linea2);
+    }
+    
 }
 
 
@@ -157,28 +162,18 @@ int main() {
     //shapes
 
     ArbolBinario<int> a;
-    int altura = 4;
-    float xx = width / (pow(2, altura - 1));
-
+    
     vector<int> aaa;
-    for (int i = 0; i < 6;i++) {
-        aaa.push_back(rand() % 20);
-        a.add(aaa[i]);
+    for (int i = 0; i < 25;i++) {
+        //aaa.push_back(rand() % 20);
+        //a.add(aaa[i]);
+        a.add(i);
     }
-    a.add(10);
-    for (auto i : aaa)
-        cout << i << " ";
-    cout << endl;
-    a.add(5);
-    a.add(6);
-    a.add(7);
-
-
-
-
-    string stir = "11";
-    int yyy = stoi(stir);
-    cout << endl;
+    int altura = 3;
+    float xx = width / ((float)(pow(2, altura - 1)));
+    //for (auto i : aaa)
+      //  cout << i << " ";
+    //cout << endl;
 
     vector<CircleShape> v;
     vector<Text*> v2;
