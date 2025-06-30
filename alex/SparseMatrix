@@ -1,0 +1,136 @@
+#include <iostream>
+struct nodoE {
+    nodoE(int _v, int _x, int _y, nodoE* d, nodoE* a) {
+        v = _v;
+        x = _x;
+        y = _y;
+        derecha = d;
+        abajo = a;
+    }
+    nodoE* derecha;
+    nodoE* abajo;
+    int v,x, y;
+};
+
+
+struct matrizEsparsa;
+struct Objx {
+    Objx(matrizEsparsa* m, int _x, int _y) {
+        matrizp = m;
+        x = _x;
+        y = _y;
+    }
+    matrizEsparsa* matrizp;
+    int x, y;
+    operator int();
+    int operator= (int v);
+    int operator= (Objx& ox);
+
+};
+
+struct matrizEsparsa {
+    matrizEsparsa(const int tam) {
+        arx = new nodoE * [tam];
+        ary = new nodoE * [tam];
+        for (int i = 0;i < tam;i++) {
+            arx[i] = 0;
+            ary[i] = 0;
+        }
+    }
+    nodoE** arx;
+    nodoE** ary;
+    bool findx(int x, int y, nodoE**& p);
+    bool findy(int x, int y, nodoE**& q);
+    int get(int x, int y);
+    void set(int x, int y, int v);
+    Objx operator() (int x, int y);
+};
+bool matrizEsparsa::findx(int x, int y, nodoE**&p) {
+    p = &arx[x];
+    for (;*p && y < (*p)->y;p = &(*p)->abajo);
+    return (*p) && (*p)->y == y;
+
+}
+bool matrizEsparsa::findy(int x, int y, nodoE**& q) {
+    q = &ary[y];
+    for (;*q && x < (*q)->x;q = &(*q)->derecha);
+    return (*q) && (*q)->x == x;
+}
+int matrizEsparsa::get(int x, int y) {
+    nodoE** p;
+    nodoE** q;
+
+    findx(x, y, p);
+    if (!findy(x, y, q)) {
+        return 0;
+    }
+    return (*p)->v;
+}
+void matrizEsparsa::set(int x, int y, int v) {
+    nodoE** p;
+    nodoE** q;
+    
+    findx(x, y, p);
+    if (v != 0) {
+        if (!findy(x, y, q)) {
+            *p = new nodoE(v, x, y, *q, *p);
+            *q = *p;
+        }
+        else 
+            (*p)->v = v;
+    }
+    else {
+        if (findy(x, y, q)) {
+            nodoE* tmp = *p;
+            *p=(*p)->abajo;
+            *q = (*q)->derecha;
+            delete tmp;
+        }
+    }
+}
+
+Objx matrizEsparsa::operator() (int x, int y) {
+    Objx q(this, x, y);
+    return q;
+}
+
+//metodos de mi OBJX
+int Objx::operator= (int v) {
+    matrizp->set(x, y, v);
+    return v; // creo q solo devuelve int para q no explote no recuerdo(int = int)
+}
+Objx::operator int() { //se supone que devuelve un int, pq detecta cuando necesitas tratar aa OBbjx como un int
+    return matrizp->get(x, y);
+}
+int Objx::operator= (Objx &ox) {
+    matrizp->set(x, y, ox.matrizp->get(x,y));
+    return matrizp->get(x, y); // creo q solo devuelve int para q no explote no recuerdo(int = int)
+}
+int main()
+{
+    matrizEsparsa m(4);
+    m.set(1, 2, 11);
+    m.set(3, 1, 20);// creo
+    
+    std::cout << m.get(1,2) << " ";
+    std::cout << m.get(1, 1) << " ";
+    std::cout << m.get(3, 1) << " ";
+
+    m.set(3, 1, 15); // modifico
+    std::cout << m.get(3, 1) << " ";
+    m.set(3, 1, 0); //elimino  v=0
+    std::cout << m.get(3, 1) << " ";
+    std::cout << "Hello World!\n";
+    //1
+    int a = m(1,2);
+    std::cout << a << " ";
+    //2
+    m(1, 2) = 8;
+    std::cout << m(1,2) << " ";
+
+    //3
+    m(1, 1) = 35;
+    m(1, 2) = m(1, 1);
+    std::cout << m(1, 2) << " ";
+
+}
