@@ -1,0 +1,210 @@
+// AntesFinalAed.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
+//
+
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+struct nodo {
+    nodo(int n) {
+        v = n;
+        nodos[0] = nodos[1] = 0;
+    }
+    int v;
+    nodo* nodos[2];
+    int altura=1;
+    int dif_alt=0;
+};
+void calcular_alt(nodo* n) {
+    int izq = !(n->nodos[0]) ? 0 : (n->nodos[0]->altura);
+    int der = !(n->nodos[1]) ? 0 : n->nodos[1]->altura;
+    n->altura = 1 + max(izq, der);
+    n->dif_alt = der-izq;
+    
+}
+
+void b_compartido(nodo** n, bool ayuda) {
+    nodo* tmp1 = *n;
+    nodo* tmp2 = (*n)->nodos[0];
+    *n = (*n)->nodos[0]->nodos[1]; // cambio el nodo padre
+    nodo* tmp3 = (*n)->nodos[0]; // guardo sus hijos
+    nodo* tmp4 = (*n)->nodos[1];
+    (*n)->nodos[0] = tmp2;
+    (*n)->nodos[1] = tmp1;
+    (*n)->nodos[0]->nodos[1] = tmp3;
+    (*n)->nodos[1]->nodos[0] = tmp4;
+    calcular_alt((*n)->nodos[0]); //vuelvo a calcular las alturas de mis 3 nodos afectados, en orden
+    calcular_alt((*n)->nodos[1]);
+    calcular_alt(*n);
+}
+
+void balance_der(nodo** n) {
+    int dif_der = !((*n)->nodos[1]) ? 0 : (*n)->nodos[1]->dif_alt;
+    if (dif_der == 1) {
+        nodo* tmp1 = *n;
+        nodo* tmp2 = (*n)->nodos[1]->nodos[0];
+        *n = (*n)->nodos[1];
+        (*n)->nodos[0] = tmp1;
+        (*n)->nodos[0]->nodos[1] = tmp2;
+        calcular_alt((*n)->nodos[0]); //vuelvo a calcular las alturas de mis 3 nodos afectados, en orden
+        calcular_alt((*n)->nodos[1]);
+        calcular_alt(*n);
+    }
+    else if (dif_der == -1) {
+        nodo* tmp1 = *n;
+        nodo* tmp2 = (*n)->nodos[1];
+        *n = (*n)->nodos[1]->nodos[0]; // cambio el nodo padre
+        nodo* tmp3 = (*n)->nodos[0]; // guardo sus hijos
+        nodo* tmp4 = (*n)->nodos[1];
+        (*n)->nodos[1] = tmp2;
+        (*n)->nodos[0] = tmp1;
+        (*n)->nodos[0]->nodos[1] = tmp3;
+        (*n)->nodos[1]->nodos[0] = tmp4;
+        calcular_alt((*n)->nodos[0]); //vuelvo a calcular las alturas de mis 3 nodos afectados, en orden
+        calcular_alt((*n)->nodos[1]);
+        calcular_alt(*n);
+    }
+
+}
+
+void balance_izq(nodo** n) {
+    int dif_izq = !((*n)->nodos[0]) ? 0 : (*n)->nodos[0]->dif_alt;
+    if (dif_izq == -1) {
+        nodo* tmp1 = *n;
+        nodo* tmp2 = (*n)->nodos[0]->nodos[1];
+        *n = (*n)->nodos[0];
+        (*n)->nodos[1] = tmp1;
+        (*n)->nodos[1]->nodos[0] = tmp2;
+        calcular_alt((*n)->nodos[0]); //vuelvo a calcular las alturas de mis 3 nodos afectados, en orden
+        calcular_alt((*n)->nodos[1]);
+        calcular_alt(*n);
+    }
+    else if (dif_izq == 1) {
+        //b_compartido(n, 1); // mando uno porque es mi caso base, no cambia la funcion
+        nodo* tmp1 = *n;
+        nodo* tmp2 = (*n)->nodos[0];
+        *n = (*n)->nodos[0]->nodos[1]; // cambio el nodo padre
+        nodo* tmp3 = (*n)->nodos[0]; // guardo sus hijos
+        nodo* tmp4 = (*n)->nodos[1];
+        (*n)->nodos[0] = tmp2;
+        (*n)->nodos[1] = tmp1;
+        (*n)->nodos[0]->nodos[1] = tmp3;
+        (*n)->nodos[1]->nodos[0] = tmp4;
+        calcular_alt((*n)->nodos[0]); //vuelvo a calcular las alturas de mis 3 nodos afectados, en orden
+        calcular_alt((*n)->nodos[1]);
+        calcular_alt(*n);
+    }
+}
+struct avl{
+    nodo* root=0;
+    bool find(int v, nodo**& p, vector<nodo**> &camino);
+    void ins(int v);
+    void rem(int v);
+    //void balanceo(vector<nodo*> camino);
+
+};
+
+bool avl::find(int v, nodo**& p, vector<nodo**> &camino) {
+    p = &root;
+    for (;(*p) && (*p)->v != v; p = &(*p)->nodos[(*p)->v < v]) {
+        camino.push_back(p); //guardare el camino de next
+    }
+    return (*p) && (*p)->v == v;
+}
+
+void avl::ins(int v) {
+    nodo** p;
+    vector<nodo**> camino;
+    if (!find(v, p, camino)) 
+        *p = new nodo(v);
+    for (auto i = camino.rbegin();i != camino.rend(); i++) {
+        calcular_alt(**i); // calculo la altura de este nodo
+        if ((*(*i))->dif_alt == 2)
+            balance_der(*i); // balanceare en este nodo
+        if ((*(*i))->dif_alt == -2)
+            balance_izq(*i); // balanceare en este nodo
+    }
+}
+
+void avl::rem(int v) {
+    nodo** p;
+    vector<nodo**> camino;
+    if (find(v, p, camino)) {
+        if ((*p)->nodos[0] && (*p)->nodos[1]) {
+            nodo** q = &(*p)->nodos[0];
+            camino.push_back(p);
+            for (;(*q)->nodos[1];q = &(*q)->nodos[1]) {
+                camino.push_back(q);
+            }
+            (*p)->v = (*q)->v;
+            p = q;
+        }
+        nodo* tmp = *p;
+        *p = (*p)->nodos[!(*p)->nodos[0]];
+        delete tmp;
+
+        for (auto i = camino.rbegin();i != camino.rend(); i++) {
+            calcular_alt(**i);
+            //cout << (*(*i))->v<< " ";
+            if ((*(*i))->dif_alt == 2)
+                balance_der(*i); // balanceare en este nodo
+            if ((*(*i))->dif_alt == -2)
+                balance_izq(*i); // balanceare en este nodo
+        }
+        cout << endl;
+
+    }
+}
+void pppp(nodo* r) {
+    if (!r)
+        return;
+    pppp(r->nodos[0]);
+    cout << r->v << "--"<<r->altura << "--- "<< r->dif_alt<< endl;
+    pppp(r->nodos[1]);
+}
+void level(nodo* r) {
+    queue < nodo* > cola;
+    cola.push(r);
+    while (!cola.empty())
+    {
+        cout << cola.front()->v << "( "<<cola.front()->altura <<")" << " ";
+        if (cola.front()->nodos[0]) {
+            cola.push(cola.front()->nodos[0]);         
+        }           
+        if (cola.front()->nodos[1]) {
+            cola.push(cola.front()->nodos[1]);
+        }
+        cola.pop();       
+    }
+}
+
+
+int main()
+{
+    avl ar;
+    
+    //ar.ins(10);
+    
+
+    //vector<int> ola{50,70,60};
+
+    //for (int i = 0; i < ola.size();i++)
+        //ar.ins(ola[i]);
+    avl tree;
+    tree.ins(50);
+    tree.ins(30);
+    tree.ins(70);
+    tree.ins(20);
+    tree.ins(40);
+    tree.ins(60);
+    tree.ins(80);
+    tree.rem(50); // Eliminar la raíz (tiene dos hijos)
+    tree.rem(30); // Eliminar nodo interno con dos hijos
+    pppp(tree.root);
+    //ar.rem(30);
+    //pppp(ar.root);
+    //printAVL(ar.root);
+    std::cout << "Hello World!\n";
+}
+
