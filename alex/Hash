@@ -1,0 +1,80 @@
+
+// HashTable.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
+//
+
+#include <iostream>
+#include <forward_list>
+#include <vector>
+using namespace std;
+template<class T>
+struct HashTable {
+
+    // sera un conjunto donde pueda guardar mis datos de forma constante y acceder tambien asi
+    // funcion de dispersion, funcion para meter, funcion para sacar
+    // idea: hacer un array que meta con una funcion hash, sus elementos en un tamaño n --> fh(x)%n y en ese indice meter el elemento
+    // usare: una lista enlazada para ir metiendo mas elementos en el mismo indice y eviotar colisiones
+    
+    HashTable(const int t) {
+
+        
+    }
+
+    //funcion 
+    std::hash<T> FuncionHash;
+    //estructura
+    forward_list<T> tabla[4];
+    int tam=4;
+    T get(T v);
+    void set(T v);
+    void print();
+};
+
+template<class T>
+void HashTable<T>::set(T v) {
+    //1 genero el indice para este v en especifico --> FuncionHash(v) % tamaño;
+    int a = FuncionHash(v) % tam;
+    tabla[a].push_front(v);
+}
+template<class T>
+void HashTable<T>::print() {
+    for (int i = 0;i < tam;i++) {
+        cout << i << " --- ";
+
+        for (auto j : tabla[i])
+            cout << j << " ";
+        cout << endl;
+        
+    }
+}
+template<class T>
+T HashTable<T>::get(T v) {
+
+    tabla[FuncionHash(v) % tam];
+    for (auto i : tabla[FuncionHash(v) % tam]) {
+        if (i == v)
+            return i;
+    }
+}
+int main()
+{
+    HashTable<int> h(5);
+
+    h.set(5);
+    h.set(9);
+    h.set(15);
+    h.set(25);
+    h.print();
+    std::cout << "Hello World!\n";
+    std::cout << h.get(9)<<"\n";
+
+}
+
+// Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
+// Depurar programa: F5 o menú Depurar > Iniciar depuración
+
+// Sugerencias para primeros pasos: 1. Use la ventana del Explorador de soluciones para agregar y administrar archivos
+//   2. Use la ventana de Team Explorer para conectar con el control de código fuente
+//   3. Use la ventana de salida para ver la salida de compilación y otros mensajes
+//   4. Use la ventana Lista de errores para ver los errores
+//   5. Vaya a Proyecto > Agregar nuevo elemento para crear nuevos archivos de código, o a Proyecto > Agregar elemento existente para agregar archivos de código existentes al proyecto
+//   6. En el futuro, para volver a abrir este proyecto, vaya a Archivo > Abrir > Proyecto y seleccione el archivo .sln
